@@ -1,97 +1,11 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
--- Set <space> as the leader key
+-- Set the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = ';'
+vim.g.maplocalleader = ';'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -165,6 +79,8 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+
+vim.o.sessionoptions = 'blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions'
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -347,6 +263,33 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>d', group = 'Diagnostics' },
+        {
+          '<leader>dt',
+          function()
+            vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
+          end,
+          desc = 'toggle diagnostics',
+        },
+        { '<leader>g', group = 'Git' },
+        { '<leader>gg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+        { '<leader>gb', '<cmd>Git blame<cr>', desc = 'Git Blame' },
+        { '<leader>gl', '<cmd>Gllog %<cr>', desc = 'Git history log for current file' },
+        { '<leader>gd', '<cmd>Gitsigns preview_hunk_inline<cr>', desc = 'Preview pending git change' },
+        { '<leader>gp', '<cmd>Gitsigns prev_hunk<cr>', desc = 'Nav to previous git change' },
+        { '<leader>gn', '<cmd>Gitsigns next_hunk<cr>', desc = 'Nav to next git change' },
+        { '<leader>gr', '<cmd>Gitsigns reset_hunk<cr>', desc = 'git reset hunk under cursor' },
+        { '<leader>gD', group = 'Diffview' },
+        { '<leader>gDo', '<cmd>DiffviewOpen<CR>', desc = 'Open diffview' },
+        { '<leader>gDc', '<cmd>DiffviewClose<CR>', desc = 'Close diffview' },
+        { '<leader>gDh', '<cmd>DiffviewFileHistory<CR>', desc = 'File history (all)' },
+        { '<leader>gDf', '<cmd>DiffviewFileHistory %<CR>', desc = 'Current file history' },
+        { '<leader>gDb', '<cmd>DiffviewOpen HEAD~1<CR>', desc = 'Diff with previous commit' },
+        { '<leader>gDm', '<cmd>DiffviewOpen origin/main...HEAD<CR>', desc = 'Diff with main' },
+        { '<leader>gDr', ':DiffviewOpen ', desc = 'Diff range (type branch)' },
+        { '<leader>b', group = 'Buffer' },
+        { '<leader>bd', ':bdelete<CR>', desc = 'Delete Buffer' },
+        { '<leader>bo', ':%bd|e#|bd#<CR>', desc = 'Delete Other Buffers' },
       },
     },
   },
@@ -407,11 +350,12 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          mappings = {
+            i = { ['<c-j>'] = 'move_selection_next', ['<c-k>'] = 'move_selection_previous' },
+            n = { ['<c-j>'] = 'move_selection_next', ['<c-k>'] = 'move_selection_previous' },
+          },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
@@ -673,7 +617,7 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -919,6 +863,21 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      require('mini.files').setup {
+        mappings = {
+          go_in = '<CR>',
+          go_in_plus = '<CR>',
+          go_out = '-',
+          gout_out_plus = 'H',
+        },
+        options = {
+          use_as_default_explorer = true,
+        },
+        windows = {
+          preview = false,
+        },
+      }
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -984,7 +943,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -1011,6 +970,9 @@ require('lazy').setup({
     },
   },
 })
+
+vim.api.nvim_set_hl(0, 'CursorLine', { bg = 'lightgreen' })
+-- vim.api.nvim_set_hl(0, 'CursorColumn', { bg = 'lightgreen' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
