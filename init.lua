@@ -275,38 +275,38 @@ require('lazy').setup({
       },
 
       -- Document existing key chains
-      spec = {
-        { '<leader>f', group = '[F]ind' },
-        { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { '<leader>d', group = 'Diagnostics' },
-        {
-          '<leader>dt',
-          function()
-            vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
-          end,
-          desc = 'toggle diagnostics',
-        },
-        { '<leader>g', group = 'Git' },
-        { '<leader>gg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
-        { '<leader>gb', '<cmd>Git blame<cr>', desc = 'Git Blame' },
-        { '<leader>gl', '<cmd>Gllog %<cr>', desc = 'Git history log for current file' },
-        { '<leader>gd', '<cmd>Gitsigns preview_hunk_inline<cr>', desc = 'Preview pending git change' },
-        { '<leader>gp', '<cmd>Gitsigns prev_hunk<cr>', desc = 'Nav to previous git change' },
-        { '<leader>gn', '<cmd>Gitsigns next_hunk<cr>', desc = 'Nav to next git change' },
-        { '<leader>gr', '<cmd>Gitsigns reset_hunk<cr>', desc = 'git reset hunk under cursor' },
-        { '<leader>gD', group = 'Diffview' },
-        { '<leader>gDo', '<cmd>DiffviewOpen<CR>', desc = 'Open diffview' },
-        { '<leader>gDc', '<cmd>DiffviewClose<CR>', desc = 'Close diffview' },
-        { '<leader>gDh', '<cmd>DiffviewFileHistory<CR>', desc = 'File history (all)' },
-        { '<leader>gDf', '<cmd>DiffviewFileHistory %<CR>', desc = 'Current file history' },
-        { '<leader>gDb', '<cmd>DiffviewOpen HEAD~1<CR>', desc = 'Diff with previous commit' },
-        { '<leader>gDm', '<cmd>DiffviewOpen origin/main...HEAD<CR>', desc = 'Diff with main' },
-        { '<leader>gDr', ':DiffviewOpen ', desc = 'Diff range (type branch)' },
-        { '<leader>b', group = 'Buffer' },
-        { '<leader>bd', ':bdelete<CR>', desc = 'Delete Buffer' },
-        { '<leader>bo', ':%bd|e#|bd#<CR>', desc = 'Delete Other Buffers' },
-      },
+       spec = {
+         { '<leader>f', group = '[F]ind' },
+         { '<leader>t', group = '[T]oggle' },
+         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+         { '<leader>d', group = 'Diagnostics' },
+         {
+           '<leader>dt',
+           function()
+             vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
+           end,
+           desc = 'toggle diagnostics',
+         },
+         { '<leader>g', group = 'Git' },
+         { '<leader>gg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+         { '<leader>gb', '<cmd>Git blame<cr>', desc = 'Git Blame' },
+         { '<leader>gl', '<cmd>Gllog %<cr>', desc = 'Git history log for current file' },
+         { '<leader>gd', '<cmd>Gitsigns preview_hunk_inline<cr>', desc = 'Preview pending git change' },
+         { '<leader>gp', '<cmd>Gitsigns prev_hunk<cr>', desc = 'Nav to previous git change' },
+         { '<leader>gn', '<cmd>Gitsigns next_hunk<cr>', desc = 'Nav to next git change' },
+         { '<leader>gr', '<cmd>Gitsigns reset_hunk<cr>', desc = 'git reset hunk under cursor' },
+         { '<leader>gD', group = 'Diffview' },
+         { '<leader>gDo', '<cmd>DiffviewOpen<CR>', desc = 'Open diffview' },
+         { '<leader>gDc', '<cmd>DiffviewClose<CR>', desc = 'Close diffview' },
+         { '<leader>gDh', '<cmd>DiffviewFileHistory<CR>', desc = 'File history (all)' },
+         { '<leader>gDf', '<cmd>DiffviewFileHistory %<CR>', desc = 'Current file history' },
+         { '<leader>gDb', '<cmd>DiffviewOpen HEAD~1<CR>', desc = 'Diff with previous commit' },
+         { '<leader>gDm', '<cmd>DiffviewOpen origin/main...HEAD<CR>', desc = 'Diff with main' },
+         { '<leader>gDr', ':DiffviewOpen ', desc = 'Diff range (type branch)' },
+         { '<leader>b', group = 'Buffer' },
+         { '<leader>bd', ':bdelete<CR>', desc = 'Delete Buffer' },
+         { '<leader>bo', ':%bd|e#|bd#<CR>', desc = 'Delete Other Buffers' },
+       },
     },
   },
 
@@ -576,16 +576,19 @@ require('lazy').setup({
             })
           end
 
-          -- The following code creates a keymap to toggle inlay hints in your
-          -- code, if the language server you are using supports them
-          --
-          -- This may be unwanted, since they displace some of your code
-          if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
-            map('<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-            end, '[T]oggle Inlay [H]ints')
-          end
-        end,
+           -- The following code creates a keymap to toggle inlay hints in your
+           -- code, if the language server you are using supports them
+           --
+           -- This may be unwanted, since they displace some of your code
+           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
+             map('<leader>th', function()
+               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
+             end, '[T]oggle Inlay [H]ints')
+           end
+
+            -- Hover documentation with Shift-K
+            map('K', function() vim.lsp.buf.hover({ border = 'rounded' }) end, '[H]over Documentation')
+         end,
       })
 
       -- Diagnostic Config
@@ -643,7 +646,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
         --
 
         lua_ls = {
@@ -989,8 +992,14 @@ require('lazy').setup({
   },
 })
 
+-- Set global border for floating windows
+vim.o.winborder = 'rounded'
+
 vim.api.nvim_set_hl(0, 'CursorLine', { bg = 'lightgreen' })
 -- vim.api.nvim_set_hl(0, 'CursorColumn', { bg = 'lightgreen' })
+
+-- Set border color for floating windows
+vim.api.nvim_set_hl(0, 'FloatBorder', { fg = 'yellow' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

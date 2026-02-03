@@ -8,7 +8,18 @@ return {
   config = function()
     vim.g.opencode_opts = {
       -- Your configuration, if any — see `lua/opencode/config.lua`
-      provider = { enabled = 'snacks' },
+      provider = {
+        enabled = 'snacks',
+        snacks = {
+          win = {
+            position = 'float',
+            width = math.floor(vim.o.columns * 0.8), -- 80% screen width
+            height = math.floor(vim.o.lines * 0.6), -- 60% screen height
+            border = 'rounded', -- Rounded border
+            enter = true, -- Enter the floating window
+          },
+        },
+      },
     }
     vim.keymap.set({ 'n', 'x' }, '<leader>aa', function()
       require('opencode').ask('@this: ', { submit = true })
