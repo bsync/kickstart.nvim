@@ -33,7 +33,7 @@ return {
       },
       {
         "<leader>at",
-        mode = "n",
+        mode = { "n", "t" },
         function()
           require("opencode").toggle()
         end,
