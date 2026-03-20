@@ -2,23 +2,30 @@ return {
   {
     "nickjvandyke/opencode.nvim",
     dependencies = {
-      -- LazyVim already includes snacks.nvim, which provides a great terminal UI
       "folke/snacks.nvim",
     },
     config = function()
-      -- Uses Snacks.nvim to open OpenCode in a floating terminal
+      local snacks_terminal_opts = {
+        win = {
+          position = "float",
+          width = math.floor(vim.o.columns * 0.8),
+          height = math.floor(vim.o.lines * 0.6),
+          border = "rounded",
+          enter = true,
+        },
+      }
+
       vim.g.opencode_opts = {
-        provider = {
-          enabled = "snacks",
-          snacks = {
-            win = {
-              position = "float",
-              width = math.floor(vim.o.columns * 0.8), -- 80% screen width
-              height = math.floor(vim.o.lines * 0.6), -- 60% screen height
-              border = "rounded", -- Rounded border
-              enter = true, -- Enter the floating window
-            },
-          },
+        server = {
+          start = function()
+            require("snacks.terminal").open("opencode --port", snacks_terminal_opts)
+          end,
+          stop = function()
+            require("snacks.terminal").get("opencode --port", snacks_terminal_opts):close()
+          end,
+          toggle = function()
+            require("snacks.terminal").toggle("opencode --port", snacks_terminal_opts)
+          end,
         },
       }
     end,
