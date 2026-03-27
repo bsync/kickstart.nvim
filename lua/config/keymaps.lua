@@ -4,4 +4,8 @@
 vim.keymap.set("n", "<leader>;", function()
 	require("snacks").picker.buffers()
 end, { desc = "Buffer picker" })
+
+vim.keymap.set("n", "<leader>e", function()
+	require("mini.files").open(vim.fn.getcwd(), true)
+end, { desc = "Explorer (cwd)" })
 vim.keymap.del("n", "<leader>,")

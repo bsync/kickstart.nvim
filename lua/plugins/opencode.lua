@@ -6,6 +6,7 @@ return {
     },
     config = function()
       local snacks_terminal_opts = {
+        enabled = true,
         win = {
           position = "float",
           width = math.floor(vim.o.columns * 0.8),
