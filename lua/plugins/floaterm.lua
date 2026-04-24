@@ -6,7 +6,7 @@ return {
       vim.g.floaterm_height = .8
       vim.api.nvim_create_autocmd("TermOpen", {
         callback = function()
-          vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { buffer = true })
+          vim.keymap.set("t", "<leader>tt", "<cmd>FloatermToggle<cr>", { buffer = true })
         end,
       })
     end,
