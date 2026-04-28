@@ -6,8 +6,11 @@ vim.keymap.set("n", "<leader>;", function()
 end, { desc = "Buffer picker" })
 
 vim.keymap.set("n", "<leader>e", function()
-	require("mini.files").open(vim.fn.getcwd(), true)
-end, { desc = "Explorer (cwd)" })
+	local mf = require("mini.files")
+	if not mf.close() then
+		mf.open(vim.fn.getcwd(), true)
+	end
+end, { desc = "Explorer (cwd, toggle)" })
 vim.keymap.set("n", "<leader>gs", function()
 	require("snacks").picker.git_status()
 end, { desc = "Git status picker" })

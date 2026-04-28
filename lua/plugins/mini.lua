@@ -1,5 +1,11 @@
 return {
   {
+    "folke/snacks.nvim",
+    opts = {
+      explorer = { replace_netrw = false },
+    },
+  },
+  {
     "nvim-mini/mini.files",
     event = "VeryLazy",
     keys = {
@@ -22,7 +28,7 @@ return {
         pattern = "*",
         callback = function(args)
           if vim.bo[args.buf].filetype == "minifiles" then
-            miniFilesClose()
+            vim.schedule(function() pcall(miniFilesClose) end)
           end
         end,
       })
