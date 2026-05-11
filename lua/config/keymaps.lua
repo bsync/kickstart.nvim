@@ -11,7 +11,9 @@ vim.keymap.set("n", "<leader>e", function()
 		mf.open(vim.fn.getcwd(), true)
 	end
 end, { desc = "Explorer (cwd, toggle)" })
-vim.keymap.set("n", "<leader>gs", function()
+vim.keymap.set("n", "<leader>fG", function()
 	require("snacks").picker.git_status()
-end, { desc = "Git status picker" })
+end, { desc = "Find git-modified files" })
 vim.keymap.del("n", "<leader>,")
+
+vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
