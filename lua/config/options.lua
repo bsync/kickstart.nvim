@@ -5,6 +5,7 @@ vim.g.mapleader = ";"
 vim.g.maplocalleader = ";"
 vim.g.autoformat = false
 vim.o.winborder = "single"
+vim.g.root_spec = { ".git" }
 
 vim.g.mkdp_browserfunc = "OpenMarkdownPreview"
 vim.g.mkdp_auto_close = 0

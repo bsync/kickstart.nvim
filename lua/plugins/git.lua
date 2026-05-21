@@ -6,6 +6,10 @@ return {
     "sindrets/diffview.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
+    keys = {
+      { "<leader>gb", "<cmd>DiffviewOpen integration...HEAD<cr>", desc = "Diff branch vs integration" },
+      { "<leader>gB", "<cmd>DiffviewClose<cr>",            desc = "Close diffview" },
+    },
     config = function()
       require("diffview").setup({
         diff_binaries = false,    -- Show diffs for binaries
