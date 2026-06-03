@@ -3,6 +3,11 @@ return {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
     opts = {
+      diff_opts = {
+        keep_terminal_focus = true, -- snap focus back to the Claude float after a diff opens
+        -- open_in_new_tab = true,            -- uncomment to isolate the diff on its own tab
+        -- hide_terminal_in_new_tab = true,   -- with open_in_new_tab, skip duplicating the Claude terminal
+      },
       terminal = {
         ---@module "snacks"
         ---@type snacks.win.Config|{}
