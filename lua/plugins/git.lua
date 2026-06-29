@@ -1,4 +1,11 @@
 return {
+  {
+    "lewis6991/gitsigns.nvim",
+    keys = {
+      { "<leader>gn", "<cmd>Gitsigns next_hunk<cr>", desc = "Next hunk" },
+      { "<leader>gp", "<cmd>Gitsigns prev_hunk<cr>", desc = "Prev hunk" },
+    },
+  },
   { 'tpope/vim-fugitive',
     lazy = false,
   },
