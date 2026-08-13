@@ -1,3 +1,33 @@
+local has_claude = vim.fn.executable("claude") == 1
+
+local keys = {
+  { "<leader>a",  nil,                              desc = "AI/Claude Code" },
+  { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
+  { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
+  { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
+  { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>",       desc = "Add current buffer" },
+  { "<leader>aA", "<cmd>ClaudeCodeDiffAccept<cr>",  desc = "Accept diff" },
+  { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>",    desc = "Deny diff" },
+}
+
+-- Shared, tool-preferred bindings. When `claude` is on $PATH, Claude Code owns the
+-- launcher (`<leader>at`) and the "send code" binding (`<leader>aa`, formerly `<leader>as`).
+-- When it is absent, opencode.nvim claims these same keys instead (see opencode.lua),
+-- so exactly one plugin ever maps them.
+if has_claude then
+  vim.list_extend(keys, {
+    { "<leader>at", "<cmd>ClaudeCode<cr>",           desc = "Toggle Claude" },
+    { "<leader>ar", "<cmd>ClaudeCode --resume<cr>",  desc = "Resume Claude" },
+    { "<leader>aa", "<cmd>ClaudeCodeSend<cr>",       desc = "Send to Claude", mode = "v" },
+    {
+      "<leader>aa",
+      "<cmd>ClaudeCodeTreeAdd<cr>",
+      desc = "Add file",
+      ft = { "NvimTree", "neo-tree", "oil", "minifiles", "netrw" },
+    },
+  })
+end
+
 return {
   {
     "coder/claudecode.nvim",
@@ -18,7 +48,7 @@ return {
           height = function() return math.floor(vim.o.lines * 0.9) end,
           keys = {
             claude_hide = {
-              "<leader>ac",
+              "<leader>at",
               function(self)
                 self:hide()
               end,
@@ -39,23 +69,6 @@ return {
         end,
       })
     end,
-    keys = {
-      { "<leader>a",  nil,                              desc = "AI/Claude Code" },
-      { "<leader>ac", "<cmd>ClaudeCode<cr>",            desc = "Toggle Claude" },
-      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
-      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>",   desc = "Resume Claude" },
-      { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-      { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
-      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>",       desc = "Add current buffer" },
-      { "<leader>as", "<cmd>ClaudeCodeSend<cr>",        desc = "Send to Claude", mode = "v" },
-      {
-        "<leader>as",
-        "<cmd>ClaudeCodeTreeAdd<cr>",
-        desc = "Add file",
-        ft = { "NvimTree", "neo-tree", "oil", "minifiles", "netrw" },
-      },
-      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>",  desc = "Accept diff" },
-      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>",    desc = "Deny diff" },
-    },
+    keys = keys,
   },
 }

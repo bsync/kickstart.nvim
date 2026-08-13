@@ -1,3 +1,39 @@
+local has_claude = vim.fn.executable("claude") == 1
+
+local keys = {}
+
+-- Only claim the shared launcher/send/review bindings when Claude Code is NOT available.
+-- When `claude` is on $PATH, claudecode.nvim owns `<leader>at` / `<leader>aa` / `<leader>ar`
+-- (see ai.lua), so exactly one plugin ever maps them.
+if not has_claude then
+  vim.list_extend(keys, {
+    {
+      "<leader>aa",
+      mode = { "n", "x" },
+      function()
+        require("opencode").ask("@this: ", { submit = true })
+      end,
+      desc = "OpenCode: Ask about selection",
+    },
+    {
+      "<leader>at",
+      mode = { "n", "t" },
+      function()
+        require("opencode").toggle()
+      end,
+      desc = "OpenCode: Toggle Terminal",
+    },
+    {
+      "<leader>ar",
+      mode = "n",
+      function()
+        require("opencode").select_session()
+      end,
+      desc = "OpenCode: Resume session",
+    },
+  })
+end
+
 return {
   {
     "nickjvandyke/opencode.nvim",
@@ -30,31 +66,6 @@ return {
         },
       }
     end,
-    keys = {
-      {
-        "<leader>aa",
-        mode = { "n", "x" },
-        function()
-          require("opencode").ask("@this: ", { submit = true })
-        end,
-        desc = "OpenCode: Ask about selection",
-      },
-      {
-        "<leader>at",
-        mode = { "n", "t" },
-        function()
-          require("opencode").toggle()
-        end,
-        desc = "OpenCode: Toggle Terminal",
-      },
-      {
-        "<leader>ar",
-        mode = "n",
-        function()
-          require("opencode").ask("Review the current buffer")
-        end,
-        desc = "OpenCode: Review Buffer",
-      },
-    },
+    keys = keys,
   },
 }

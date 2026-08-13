@@ -9,13 +9,111 @@ return {
   { 'tpope/vim-fugitive',
     lazy = false,
   },
+  -- Free up <leader>gd (Git Diff hunks) and <leader>gs (Git Status) from the
+  -- LazyVim Snacks picker defaults so they can act as the diffview / gitsigns
+  -- prefixes — git status lives on <leader>fG (see config/keymaps.lua). <leader>gD
+  -- (Git Diff origin) stays disabled to keep the top-level <leader>g namespace to
+  -- one key per plugin; everything diffview is under <leader>gd*.
+  {
+    "folke/snacks.nvim",
+    keys = {
+      { "<leader>gd", false },
+      { "<leader>gD", false },
+      { "<leader>gs", false },
+    },
+  },
+  -- <leader>gd and <leader>gs are the diffview / gitsigns groups; LazyVim's
+  -- <leader>gh "hunks" group is gone.
+  {
+    "folke/which-key.nvim",
+    opts = function(_, opts)
+      opts.spec = opts.spec or {}
+      for _, group in ipairs(opts.spec) do
+        for i = #group, 1, -1 do
+          if type(group[i]) == "table" and group[i][1] == "<leader>gh" then
+            table.remove(group, i)
+          end
+        end
+      end
+      table.insert(opts.spec, {
+        mode = { "n", "x" },
+        { "<leader>gd", group = "diff view" },
+        { "<leader>gs", group = "gitsigns" },
+      })
+    end,
+  },
+  -- Free up ]c / [c from treesitter class navigation so gitsigns can claim them.
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    opts = function(_, opts)
+      for _, dir in ipairs({ "goto_next_start", "goto_next_end", "goto_previous_start", "goto_previous_end" }) do
+        local keys = vim.tbl_get(opts, "move", "keys", dir)
+        if keys then
+          keys["]c"], keys["[c"] = nil, nil
+        end
+      end
+    end,
+  },
+  -- Own the whole gitsigns on_attach rather than chaining LazyVim's: its hunk
+  -- actions live under <leader>gh, and buffer-local maps can't be cleanly removed
+  -- after the fact. Everything below is the LazyVim set rehomed to <leader>gs,
+  -- plus this config's own review bindings.
+  {
+    "lewis6991/gitsigns.nvim",
+    opts = function(_, opts)
+      opts.on_attach = function(buffer)
+        local gs = package.loaded.gitsigns
+
+        local function map(mode, l, r, desc)
+          vim.keymap.set(mode, l, r, { buffer = buffer, desc = desc, silent = true })
+        end
+
+        -- Navigation: ]h/[h and ]c/[c both walk hunks (]c/[c falls through to
+        -- vim's own diff motions in a diff window); ]C/[C walk hunks with an
+        -- auto-opened floating preview for reviewing.
+        -- stylua: ignore start
+        local function nav(dir, vimkey)
+          return function()
+            if vim.wo.diff then
+              vim.cmd.normal({ vimkey, bang = true })
+            else
+              gs.nav_hunk(dir)
+            end
+          end
+        end
+        map("n", "]h", nav("next", "]c"), "Next Hunk")
+        map("n", "[h", nav("prev", "[c"), "Prev Hunk")
+        map("n", "]c", nav("next", "]c"), "Next Hunk")
+        map("n", "[c", nav("prev", "[c"), "Prev Hunk")
+        map("n", "]H", function() gs.nav_hunk("last") end, "Last Hunk")
+        map("n", "[H", function() gs.nav_hunk("first") end, "First Hunk")
+        map("n", "]C", function() gs.nav_hunk("next", { preview = true }) end, "Next Hunk (preview)")
+        map("n", "[C", function() gs.nav_hunk("prev", { preview = true }) end, "Prev Hunk (preview)")
+        map({ "n", "x" }, "<leader>gss", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
+        map({ "n", "x" }, "<leader>gsr", ":Gitsigns reset_hunk<CR>", "Reset Hunk")
+        map("n", "<leader>gsS", gs.stage_buffer, "Stage Buffer")
+        map("n", "<leader>gsu", gs.undo_stage_hunk, "Undo Stage Hunk")
+        map("n", "<leader>gsR", gs.reset_buffer, "Reset Buffer")
+        map("n", "<leader>gsp", gs.preview_hunk_inline, "Preview Hunk Inline")
+        map("n", "<leader>gsP", gs.preview_hunk, "Preview Hunk (float)")
+        map("n", "<leader>gsb", function() gs.blame_line({ full = true }) end, "Blame Line")
+        map("n", "<leader>gsB", function() gs.blame() end, "Blame Buffer")
+        map("n", "<leader>gsd", gs.diffthis, "Diff This")
+        map("n", "<leader>gsD", function() gs.diffthis("~") end, "Diff This ~")
+        map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
+        -- stylua: ignore end
+      end
+    end,
+  },
   {
     "sindrets/diffview.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
     keys = {
-      { "<leader>gb", "<cmd>DiffviewOpen integration...HEAD<cr>", desc = "Diff branch vs integration" },
-      { "<leader>gB", "<cmd>DiffviewClose<cr>",            desc = "Close diffview" },
+      { "<leader>gdw", "<cmd>DiffviewOpen integration...HEAD --imply-local<cr>", desc = "Diff vs integration (incl. uncommitted)" },
+      { "<leader>gdI", "<cmd>DiffviewOpen integration...HEAD<cr>",               desc = "Diff vs integration (committed only)" },
+      { "<leader>gdi", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
+      { "<leader>gdD", "<cmd>DiffviewClose<cr>",                                 desc = "Close diffview" },
     },
     config = function()
       require("diffview").setup({
