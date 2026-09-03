@@ -6,7 +6,17 @@ return {
   opts = {
     servers = {
       pyright = { enabled = false },
-      pyrefly = {},
+      -- Neovim ships didChangeWatchedFiles.dynamicRegistration = false, so a server is told
+      -- the client cannot watch files and never registers watchers. Without this, edits made
+      -- outside the editor are invisible to pyrefly: its index keeps the pre-edit copy of any
+      -- file no buffer has opened, so find-references silently misses call sites written by
+      -- an external tool. Requires inotify-tools -- vim._watch falls back to a directory
+      -- poller when inotifywait is absent, which is punishing on a large tree.
+      pyrefly = {
+        capabilities = {
+          workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
+        },
+      },
     },
   },
 }
