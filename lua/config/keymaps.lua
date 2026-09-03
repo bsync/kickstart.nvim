@@ -72,6 +72,18 @@ vim.keymap.set("n", "<leader>gsi", function()
 	require("gitsigns").change_base(base, true)
 	vim.notify("gitsigns base → integration merge-base (" .. base:sub(1, 8) .. ")")
 end, { desc = "Gitsigns: diff vs integration merge-base" })
+-- Same idea one commit back: gutters show only what the most recent commit changed.
+-- Resolved to a SHA rather than passing "HEAD~1" through, so the base stays put if you
+-- commit again while it is set -- otherwise it would silently slide forward under you.
+vim.keymap.set("n", "<leader>gsh", function()
+	local base = vim.fn.system("git rev-parse --verify --short=8 HEAD~1"):gsub("%s+", "")
+	if vim.v.shell_error ~= 0 or base == "" then
+		vim.notify("No previous commit (HEAD may be the root commit)", vim.log.levels.ERROR)
+		return
+	end
+	require("gitsigns").change_base(base, true)
+	vim.notify("gitsigns base → previous commit (" .. base .. ")")
+end, { desc = "Gitsigns: diff vs previous commit" })
 vim.keymap.set("n", "<leader>gsI", function()
 	require("gitsigns").change_base(nil, true)
 	vim.notify("gitsigns base → index")
