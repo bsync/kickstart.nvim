@@ -6,6 +6,7 @@ vim.g.maplocalleader = ";"
 vim.g.autoformat = false
 vim.o.winborder = "single"
 vim.g.root_spec = { ".git" }
+vim.g.lazyvim_python_lsp = "basedpyright" -- used by the lang.python extra
 
 vim.g.mkdp_browserfunc = "OpenMarkdownPreview"
 vim.g.mkdp_auto_close = 0
