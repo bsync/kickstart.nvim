@@ -50,44 +50,6 @@ vim.keymap.set("n", "<leader>e", function()
 		mf.open(vim.fn.getcwd(), true)
 	end
 end, { desc = "Explorer (cwd, toggle)" })
-vim.keymap.set("n", "<leader>fG", function()
-	require("snacks").picker.git_status()
-end, { desc = "Find git-modified files" })
--- Gitsigns lives under <leader>gs; the buffer-local half is in plugins/git.lua.
-vim.keymap.set("n", "<leader>gsq", function()
-	require("gitsigns").setqflist("all", { open = true })
-end, { desc = "Quickfix all git hunks (repo-wide)" })
--- Point gitsigns gutters at the merge-base with integration (three-dot review
--- semantics) so hunks reflect only this branch's changes. Falls back to the
--- local `integration` ref when there is no `origin/integration`.
-vim.keymap.set("n", "<leader>gsi", function()
-	local base = vim.fn.system("git merge-base origin/integration HEAD"):gsub("%s+", "")
-	if vim.v.shell_error ~= 0 or base == "" then
-		base = vim.fn.system("git merge-base integration HEAD"):gsub("%s+", "")
-	end
-	if vim.v.shell_error ~= 0 or base == "" then
-		vim.notify("Could not find a merge-base with integration", vim.log.levels.ERROR)
-		return
-	end
-	require("gitsigns").change_base(base, true)
-	vim.notify("gitsigns base → integration merge-base (" .. base:sub(1, 8) .. ")")
-end, { desc = "Gitsigns: diff vs integration merge-base" })
--- Same idea one commit back: gutters show only what the most recent commit changed.
--- Resolved to a SHA rather than passing "HEAD~1" through, so the base stays put if you
--- commit again while it is set -- otherwise it would silently slide forward under you.
-vim.keymap.set("n", "<leader>gsp", function()
-	local base = vim.fn.system("git rev-parse --verify --short=8 HEAD~1"):gsub("%s+", "")
-	if vim.v.shell_error ~= 0 or base == "" then
-		vim.notify("No previous commit (HEAD may be the root commit)", vim.log.levels.ERROR)
-		return
-	end
-	require("gitsigns").change_base(base, true)
-	vim.notify("gitsigns base → previous commit (" .. base .. ")")
-end, { desc = "Gitsigns: diff vs previous commit" })
-vim.keymap.set("n", "<leader>gsx", function()
-	require("gitsigns").change_base(nil, true)
-	vim.notify("gitsigns base → index")
-end, { desc = "Gitsigns: reset base to index" })
 vim.keymap.del("n", "<leader>,")
 vim.keymap.del("n", "<leader>fT")
 

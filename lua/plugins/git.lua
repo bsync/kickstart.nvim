@@ -1,9 +1,61 @@
 return {
+  -- Global gitsigns maps; the buffer-local half is in the on_attach further down.
   {
     "lewis6991/gitsigns.nvim",
     keys = {
       { "<leader>gn", "<cmd>Gitsigns next_hunk<cr>", desc = "Next hunk" },
       { "<leader>gp", "<cmd>Gitsigns prev_hunk<cr>", desc = "Prev hunk" },
+      {
+        "<leader>gsq",
+        function()
+          require("gitsigns").setqflist("all", { open = true })
+        end,
+        desc = "Quickfix all git hunks (repo-wide)",
+      },
+      -- Point gitsigns gutters at the merge-base with integration (three-dot review
+      -- semantics) so hunks reflect only this branch's changes. Falls back to the
+      -- local `integration` ref when there is no `origin/integration`.
+      {
+        "<leader>gsi",
+        function()
+          local base = vim.fn.system("git merge-base origin/integration HEAD"):gsub("%s+", "")
+          if vim.v.shell_error ~= 0 or base == "" then
+            base = vim.fn.system("git merge-base integration HEAD"):gsub("%s+", "")
+          end
+          if vim.v.shell_error ~= 0 or base == "" then
+            vim.notify("Could not find a merge-base with integration", vim.log.levels.ERROR)
+            return
+          end
+          require("gitsigns").change_base(base, true)
+          vim.notify("gitsigns base → integration merge-base (" .. base:sub(1, 8) .. ")")
+        end,
+        desc = "Gitsigns: diff vs integration merge-base",
+      },
+      -- Same idea one commit back: gutters show only what the most recent commit changed.
+      -- Resolved to a SHA rather than passing "HEAD~1" through, so the base stays put if you
+      -- commit again while it is set -- otherwise it would silently slide forward under you.
+      -- Not <leader>gsp: that is the buffer-local Preview Hunk Inline, which would shadow it.
+      {
+        "<leader>gsc",
+        function()
+          local base = vim.fn.system("git rev-parse --verify --short=8 HEAD~1"):gsub("%s+", "")
+          if vim.v.shell_error ~= 0 or base == "" then
+            vim.notify("No previous commit (HEAD may be the root commit)", vim.log.levels.ERROR)
+            return
+          end
+          require("gitsigns").change_base(base, true)
+          vim.notify("gitsigns base → previous commit (" .. base .. ")")
+        end,
+        desc = "Gitsigns: diff vs previous commit",
+      },
+      {
+        "<leader>gsx",
+        function()
+          require("gitsigns").change_base(nil, true)
+          vim.notify("gitsigns base → index")
+        end,
+        desc = "Gitsigns: reset base to index",
+      },
     },
   },
   { 'tpope/vim-fugitive',
@@ -11,15 +63,16 @@ return {
   },
   -- Free up <leader>gd (Git Diff hunks) and <leader>gs (Git Status) from the
   -- LazyVim Snacks picker defaults so they can act as the diffview / gitsigns
-  -- prefixes — git status lives on <leader>fG (see config/keymaps.lua). <leader>gD
-  -- (Git Diff origin) stays disabled to keep the top-level <leader>g namespace to
-  -- one key per plugin; everything diffview is under <leader>gd*.
+  -- prefixes — git status moves to <leader>fG. <leader>gD (Git Diff origin) stays
+  -- disabled to keep the top-level <leader>g namespace to one key per plugin;
+  -- everything diffview is under <leader>gd*.
   {
     "folke/snacks.nvim",
     keys = {
       { "<leader>gd", false },
       { "<leader>gD", false },
       { "<leader>gs", false },
+      { "<leader>fG", function() Snacks.picker.git_status() end, desc = "Find git-modified files" },
     },
   },
   -- <leader>gd and <leader>gs are the diffview / gitsigns groups; LazyVim's
@@ -110,9 +163,9 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
     keys = {
-      { "<leader>gdw", "<cmd>DiffviewOpen integration...HEAD --imply-local<cr>", desc = "Diff vs integration (incl. uncommitted)" },
-      { "<leader>gdI", "<cmd>DiffviewOpen integration...HEAD<cr>",               desc = "Diff vs integration (committed only)" },
-      { "<leader>gdi", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
+      { "<leader>gdi", "<cmd>DiffviewOpen master...HEAD --imply-local<cr>", desc = "Diff vs main (incl. uncommitted)" },
+      { "<leader>gdI", "<cmd>DiffviewOpen integration...HEAD --imply-local<cr>", desc = "Diff vs integration (incl. uncommitted)" },
+      { "<leader>gdx", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
       { "<leader>gdD", "<cmd>DiffviewClose<cr>",                                 desc = "Close diffview" },
     },
     config = function()
