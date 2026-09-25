@@ -1,3 +1,21 @@
+-- Point gitsigns gutters at the merge-base with `branch` (three-dot review semantics)
+-- so hunks reflect only this branch's changes. Prefers `origin/<branch>`, falling back
+-- to the local `<branch>` ref when there is no remote one. Returns a keymap callback.
+local function gitsigns_base_merge_base(branch)
+  return function()
+    local base = vim.fn.system({ "git", "merge-base", "origin/" .. branch, "HEAD" }):gsub("%s+", "")
+    if vim.v.shell_error ~= 0 or base == "" then
+      base = vim.fn.system({ "git", "merge-base", branch, "HEAD" }):gsub("%s+", "")
+    end
+    if vim.v.shell_error ~= 0 or base == "" then
+      vim.notify("Could not find a merge-base with " .. branch, vim.log.levels.ERROR)
+      return
+    end
+    require("gitsigns").change_base(base, true)
+    vim.notify("gitsigns base → " .. branch .. " merge-base (" .. base:sub(1, 8) .. ")")
+  end
+end
+
 return {
   -- Global gitsigns maps; the buffer-local half is in the on_attach further down.
   {
@@ -12,25 +30,9 @@ return {
         end,
         desc = "Quickfix all git hunks (repo-wide)",
       },
-      -- Point gitsigns gutters at the merge-base with integration (three-dot review
-      -- semantics) so hunks reflect only this branch's changes. Falls back to the
-      -- local `integration` ref when there is no `origin/integration`.
-      {
-        "<leader>gsi",
-        function()
-          local base = vim.fn.system("git merge-base origin/integration HEAD"):gsub("%s+", "")
-          if vim.v.shell_error ~= 0 or base == "" then
-            base = vim.fn.system("git merge-base integration HEAD"):gsub("%s+", "")
-          end
-          if vim.v.shell_error ~= 0 or base == "" then
-            vim.notify("Could not find a merge-base with integration", vim.log.levels.ERROR)
-            return
-          end
-          require("gitsigns").change_base(base, true)
-          vim.notify("gitsigns base → integration merge-base (" .. base:sub(1, 8) .. ")")
-        end,
-        desc = "Gitsigns: diff vs integration merge-base",
-      },
+      -- Merge-base bases for the standard branches; add more here as needed.
+      { "<leader>gsi", gitsigns_base_merge_base("master"), desc = "Gitsigns: diff vs master merge-base" },
+      { "<leader>gsI", gitsigns_base_merge_base("integration"), desc = "Gitsigns: diff vs integration merge-base" },
       -- Same idea one commit back: gutters show only what the most recent commit changed.
       -- Resolved to a SHA rather than passing "HEAD~1" through, so the base stays put if you
       -- commit again while it is set -- otherwise it would silently slide forward under you.
