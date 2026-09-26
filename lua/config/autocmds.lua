@@ -39,7 +39,12 @@ vim.api.nvim_create_user_command("DiffLast", function()
   vim.cmd("Gvdiffsplit " .. sha .. "^")
 end, { desc = "Diff buffer against the parent of the last commit that touched this file" })
 
-vim.api.nvim_create_autocmd("TermOpen", {
+vim.api.nvim_create_autocmd("LspAttach", {
+  desc = "Disable inlay hints on LSP attach (toggle with <leader>uI)",
+  callback = function(args)
+    vim.lsp.inlay_hint.enable(false, { bufnr = args.buf })
+  end,
+})
   callback = function()
     vim.keymap.set("n", "gf", function()
       local cfile = vim.fn.expand("<cfile>")
