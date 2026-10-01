@@ -165,7 +165,7 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
     keys = {
-      { "<leader>gdi", "<cmd>DiffviewOpen master...HEAD --imply-local<cr>", desc = "Diff vs main (incl. uncommitted)" },
+      { "<leader>gdi", "<cmd>DiffviewOpen origin/master...HEAD --imply-local<cr>", desc = "Diff vs origin/main (incl. uncommitted)" },
       { "<leader>gdI", "<cmd>DiffviewOpen origin/integration...HEAD --imply-local<cr>", desc = "Diff vs origin/integration (incl. uncommitted)" },
       { "<leader>gdx", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
       { "<leader>gdD", "<cmd>DiffviewClose<cr>",                                 desc = "Close diffview" },
