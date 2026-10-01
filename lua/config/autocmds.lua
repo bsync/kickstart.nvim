@@ -45,18 +45,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.lsp.inlay_hint.enable(false, { bufnr = args.buf })
   end,
 })
+
+vim.api.nvim_create_autocmd("TermOpen", {
+  desc = "Map gf in terminal buffers to open file under cursor",
   callback = function()
     vim.keymap.set("n", "gf", function()
       local cfile = vim.fn.expand("<cfile>")
       if cfile == "" then return end
 
-      -- Resolve to a real path (walks up from cwd to find it)
       local path = vim.fn.findfile(cfile, ".;")
       if path == "" then
         path = vim.fn.fnamemodify(cfile, ":p")
       end
 
-      -- Hide the terminal window if there's somewhere else to land
       if #vim.api.nvim_tabpage_list_wins(0) > 1 then
         vim.cmd("hide")
       end
