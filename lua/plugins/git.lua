@@ -166,7 +166,7 @@ return {
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
     keys = {
       { "<leader>gdi", "<cmd>DiffviewOpen master...HEAD --imply-local<cr>", desc = "Diff vs main (incl. uncommitted)" },
-      { "<leader>gdI", "<cmd>DiffviewOpen integration...HEAD --imply-local<cr>", desc = "Diff vs integration (incl. uncommitted)" },
+      { "<leader>gdI", "<cmd>DiffviewOpen origin/integration...HEAD --imply-local<cr>", desc = "Diff vs origin/integration (incl. uncommitted)" },
       { "<leader>gdx", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
       { "<leader>gdD", "<cmd>DiffviewClose<cr>",                                 desc = "Close diffview" },
     },
