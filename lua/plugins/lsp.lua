@@ -14,6 +14,13 @@ return {
         capabilities = {
           workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
         },
+        -- Root at the repository, not at the nearest pyproject.toml. The default markers
+        -- stop at any pyproject/setup file, so a nested one -- silverthread's
+        -- tests/pyproject.toml, which only holds pytest settings -- became the workspace root
+        -- for every file under it, and `from tests.... import ...` could not resolve.
+        -- A file with neither marker above it gets no root: it attaches to a shared rootless
+        -- basedpyright client, and a pyproject.toml beside it is not read as config.
+        root_markers = { "pyrightconfig.json", ".git" },
         -- basedpyright defaults to "recommended", far stricter than pyright's "standard".
         -- A [tool.basedpyright] / [tool.pyright] section or pyrightconfig.json in a project
         -- overrides this.
