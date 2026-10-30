@@ -3,7 +3,17 @@
 return {
   "neovim/nvim-lspconfig",
   opts = {
+    -- LazyVim enables inlay hints by default and re-enables them from a
+    -- textDocument/inlayHint response hook (LazyVim plugins/lsp/init.lua), which
+    -- runs after LspAttach. An LspAttach autocmd therefore cannot keep them off,
+    -- so disable the feature at its source. Toggle with <leader>uh.
+    inlay_hints = { enabled = false },
     servers = {
+      -- mason has both typescript-language-server (ts_ls) and vtsls installed, and
+      -- automatic_enable starts every installed package that nothing excludes. Both then
+      -- answer textDocument/references, so `gr` lists each reference twice. vtsls is
+      -- the maintained typescript-go fork and supersedes ts_ls.
+      ts_ls = { enabled = false },
       -- Neovim ships didChangeWatchedFiles.dynamicRegistration = false, so a server is told
       -- the client cannot watch files and never registers watchers. Without this, edits made
       -- outside the editor are invisible to the server: its index keeps the pre-edit copy of
