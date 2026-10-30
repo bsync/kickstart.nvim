@@ -33,6 +33,7 @@ return {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
     opts = {
+      focus_after_send = true, -- every send/add (<leader>aa, <leader>ab, tree add) jumps into the Claude float
       diff_opts = {
         keep_terminal_focus = true, -- snap focus back to the Claude float after a diff opens
         -- open_in_new_tab = true,            -- uncomment to isolate the diff on its own tab
@@ -61,7 +62,33 @@ return {
     },
     config = function(_, opts)
       require("claudecode").setup(opts)
+      -- claudecode.nvim hides its Snacks float with nvim_win_set_config({hide=true}) instead of
+      -- closing it, and a float belongs to one tabpage. Left alone, the Claude float stays in the
+      -- tab it was first opened in, so <leader>aa / <leader>at from another tab (e.g. Diffview)
+      -- show it off-screen. On entering a tab, close any floating window showing the Claude
+      -- terminal buffer in another tab (the buffer and its job survive, as with Snacks' own hide)
+      -- so the next show recreates the float here. Only floats: a split of the terminal (e.g.
+      -- claudecode's open_in_new_tab diff layout) belongs to the tab it was opened in and may be
+      -- that tab's last window.
+      local group = vim.api.nvim_create_augroup("user_claudecode", { clear = true })
+      vim.api.nvim_create_autocmd("TabEnter", {
+        group = group,
+        callback = function()
+          local bufnr = require("claudecode.terminal").get_active_terminal_bufnr()
+          if not bufnr then
+            return
+          end
+          -- Snacks' WinClosed handler closes the backdrop along with the float.
+          local tab = vim.api.nvim_get_current_tabpage()
+          for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+            if vim.api.nvim_win_get_config(win).relative ~= "" and vim.api.nvim_win_get_tabpage(win) ~= tab then
+              pcall(vim.api.nvim_win_close, win, true)
+            end
+          end
+        end,
+      })
       vim.api.nvim_create_autocmd({ "WinResized", "VimResized", "WinEnter" }, {
+        group = group,
         callback = function()
           if vim.bo.filetype == "snacks_terminal" or vim.b.snacks_terminal then
             vim.schedule(function() vim.cmd("mode") end)
