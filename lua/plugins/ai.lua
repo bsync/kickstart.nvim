@@ -1,5 +1,8 @@
-local has_claude = vim.fn.executable("claude") == 1
+local has_claude = vim.env.NVIM_AI == "claude" and vim.fn.executable("claude") == 1
 
+if not has_claude then
+  return {}
+end
 local keys = {
   { "<leader>a",  nil,                              desc = "AI/Claude Code" },
   { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
@@ -10,10 +13,10 @@ local keys = {
   { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>",    desc = "Deny diff" },
 }
 
--- Shared, tool-preferred bindings. When `claude` is on $PATH, Claude Code owns the
--- launcher (`<leader>at`) and the "send code" binding (`<leader>aa`, formerly `<leader>as`).
--- When it is absent, opencode.nvim claims these same keys instead (see opencode.lua),
--- so exactly one plugin ever maps them.
+-- Shared, tool-preferred bindings. Claude Code owns the launcher (`<leader>at`) and
+-- the "send code" binding (`<leader>aa`, formerly `<leader>as`) when NVIM_AI is
+-- "claude" and `claude` is on $PATH. Otherwise opencode.nvim claims these same
+-- keys instead (see opencode.lua), so exactly one plugin ever maps them.
 if has_claude then
   vim.list_extend(keys, {
     { "<leader>at", "<cmd>ClaudeCode<cr>",           desc = "Toggle Claude" },
