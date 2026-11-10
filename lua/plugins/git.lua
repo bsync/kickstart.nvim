@@ -1,8 +1,34 @@
+-- Name of the repo's trunk branch ("main" or "master"), or nil if neither exists.
+-- Prefers origin/HEAD (the remote's declared default); otherwise checks main, then
+-- master, as a remote ref first and then a local one. Resolved per call, not at load,
+-- so one config works across repos with different trunk names.
+local function default_branch()
+  local ref = vim.fn.system({ "git", "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD" }):gsub("%s+", "")
+  if vim.v.shell_error == 0 and ref ~= "" then
+    return (ref:gsub("^origin/", ""))
+  end
+  for _, name in ipairs({ "main", "master" }) do
+    for _, candidate in ipairs({ "origin/" .. name, name }) do
+      vim.fn.system({ "git", "rev-parse", "--verify", "--quiet", candidate .. "^{commit}" })
+      if vim.v.shell_error == 0 then
+        return name
+      end
+    end
+  end
+end
+
 -- Point gitsigns gutters at the merge-base with `branch` (three-dot review semantics)
--- so hunks reflect only this branch's changes. Prefers `origin/<branch>`, falling back
+-- so hunks reflect only this branch's changes. A nil `branch` means the repo's trunk,
+-- resolved by default_branch() at keypress. Prefers `origin/<branch>`, falling back
 -- to the local `<branch>` ref when there is no remote one. Returns a keymap callback.
 local function gitsigns_base_merge_base(branch)
   return function()
+    -- Local copy: assigning to `branch` would pin the first repo's trunk into the closure.
+    local branch = branch or default_branch()
+    if not branch then
+      vim.notify("No main/master branch found", vim.log.levels.ERROR)
+      return
+    end
     local base = vim.fn.system({ "git", "merge-base", "origin/" .. branch, "HEAD" }):gsub("%s+", "")
     if vim.v.shell_error ~= 0 or base == "" then
       base = vim.fn.system({ "git", "merge-base", branch, "HEAD" }):gsub("%s+", "")
@@ -31,7 +57,7 @@ return {
         desc = "Quickfix all git hunks (repo-wide)",
       },
       -- Merge-base bases for the standard branches; add more here as needed.
-      { "<leader>gsi", gitsigns_base_merge_base("master"), desc = "Gitsigns: diff vs master merge-base" },
+      { "<leader>gsi", gitsigns_base_merge_base(nil), desc = "Gitsigns: diff vs main/master merge-base" },
       { "<leader>gsI", gitsigns_base_merge_base("integration"), desc = "Gitsigns: diff vs integration merge-base" },
       -- Same idea one commit back: gutters show only what the most recent commit changed.
       -- Resolved to a SHA rather than passing "HEAD~1" through, so the base stays put if you
@@ -165,7 +191,24 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
     keys = {
-      { "<leader>gdi", "<cmd>DiffviewOpen origin/master...HEAD --imply-local<cr>", desc = "Diff vs origin/main (incl. uncommitted)" },
+      {
+        "<leader>gdi",
+        function()
+          local branch = default_branch()
+          if not branch then
+            return vim.notify("No main/master branch found", vim.log.levels.ERROR)
+          end
+          -- Prefer the remote ref (a stale local trunk would drag already-merged commits into
+          -- the diff); fall back to the local branch when the repo has no origin copy of it.
+          local ref = "origin/" .. branch
+          vim.fn.system({ "git", "rev-parse", "--verify", "--quiet", ref .. "^{commit}" })
+          if vim.v.shell_error ~= 0 then
+            ref = branch
+          end
+          vim.cmd("DiffviewOpen " .. ref .. "...HEAD --imply-local")
+        end,
+        desc = "Diff vs main|master merge-base (incl. uncommitted)",
+      },
       { "<leader>gdI", "<cmd>DiffviewOpen origin/integration...HEAD --imply-local<cr>", desc = "Diff vs origin/integration (incl. uncommitted)" },
       { "<leader>gdx", "<cmd>DiffviewOpen<cr>",                                  desc = "Diff working tree (uncommitted)" },
       { "<leader>gdD", "<cmd>DiffviewClose<cr>",                                 desc = "Close diffview" },
